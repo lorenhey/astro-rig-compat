@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-astro-rig-compat = "astro_rig_compat:main"
+astro-rig-compat = "astro_rig_compat.cli.main:app"
 
 [build-system]
 requires = ["uv_build>=0.12.10,<0.13.0"]

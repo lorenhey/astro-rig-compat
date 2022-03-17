@@ -1,0 +1,209 @@
+name: "Golden Rig Valid"
+version: "1.0"
+components:
+  scope1:
+    id: scope1
+    type: telescope
+    metadata:
+      model: "Generic Refractor 80mm"
+    mass: "3 kg"
+    aperture: "80 mm"
+    focal_length: "480 mm"
+    native_f_ratio: 6.0
+    mechanical_ports:
+      focuser_out:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: female
+        direction: output
+        clear_aperture: "48 mm"
+      mount:
+        interface_family: dovetail
+        nominal_size: "vixen"
+        direction: bidirectional
+  
+  reducer1:
+    id: reducer1
+    type: reducer
+    metadata:
+      model: "0.8x Reducer M48"
+    mass: "200 g"
+    reduction_factor: 0.8
+    required_backfocus: "55 mm"
+    backfocus_reference_port: "out"
+    mechanical_ports:
+      in:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: male
+        direction: input
+      out:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: male
+        direction: output
+    optical_ports:
+      out:
+        image_circle: "42 mm"
+        direction: output
+        
+  spacer1:
+    id: spacer1
+    type: spacer
+    metadata:
+      model: "M48 Extension 16.5mm"
+    mass: "20 g"
+    optical_length: "16.5 mm"
+    mechanical_ports:
+      in:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: female
+        direction: input
+      out:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: male
+        direction: output
+
+  spacer2:
+    id: spacer2
+    type: spacer
+    metadata:
+      model: "M48 Extension 21mm"
+    mass: "25 g"
+    optical_length: "21 mm"
+    mechanical_ports:
+      in:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: female
+        direction: input
+      out:
+        interface_family: metric_thread
+        nominal_size: "42 mm"
+        pitch: "0.75 mm"
+        gender: male
+        direction: output
+
+  cam1:
+    id: cam1
+    type: camera
+    metadata:
+      model: "Cool Camera 2600"
+    mass: "700 g"
+    sensor:
+      width: "23.5 mm"
+      height: "15.7 mm"
+      diagonal: "28.3 mm"
+      pixel_size: "3.76 um"
+      color: true
+    flange_focal_distance: "17.5 mm"
+    mechanical_ports:
+      in:
+        interface_family: metric_thread
+        nominal_size: "42 mm"
+        pitch: "0.75 mm"
+        gender: female
+        direction: input
+    electrical_ports:
+      power_in:
+        port_type: power_in
+        voltage: "12 V"
+        current: "0.5 A"
+        peak_current: "3.0 A"
+        connector: "DC 5.5x2.1"
+        polarity: center_positive
+
+  mount1:
+    id: mount1
+    type: mount
+    metadata:
+      model: "Good Mount EQ"
+    mount_type: eq
+    payload_capacity: "15 kg"
+    saddle_type: ["vixen"]
+    mechanical_ports:
+      saddle:
+        interface_family: dovetail
+        nominal_size: "vixen"
+        direction: bidirectional
+    electrical_ports:
+      power_in:
+        port_type: power_in
+        voltage: "12 V"
+        current: "1.0 A"
+        peak_current: "4.0 A"
+        connector: "DC 5.5x2.1"
+        polarity: center_positive
+
+  psu1:
+    id: psu1
+    type: power_supply
+    mass: "500 g"
+    metadata:
+      model: "PSU 12V 10A"
+    electrical_ports:
+      out1:
+        port_type: power_out
+        voltage: "12 V"
+        current: "10 A"
+        peak_current: "12 A"
+        connector: "DC 5.5x2.1"
+        polarity: center_positive
+      out2:
+        port_type: power_out
+        voltage: "12 V"
+        current: "10 A"
+        peak_current: "12 A"
+        connector: "DC 5.5x2.1"
+        polarity: center_positive
+
+connections:
+  - from_component: scope1
+    from_port: focuser_out
+    to_component: reducer1
+    to_port: in
+    connection_type: mechanical
+    
+  - from_component: reducer1
+    from_port: out
+    to_component: spacer1
+    to_port: in
+    connection_type: mechanical
+    
+  - from_component: spacer1
+    from_port: out
+    to_component: spacer2
+    to_port: in
+    connection_type: mechanical
+    
+  - from_component: spacer2
+    from_port: out
+    to_component: cam1
+    to_port: in
+    connection_type: mechanical
+
+  - from_component: scope1
+    from_port: mount
+    to_component: mount1
+    to_port: saddle
+    connection_type: mechanical
+    
+  - from_component: psu1
+    from_port: out1
+    to_component: mount1
+    to_port: power_in
+    connection_type: power
+    
+  - from_component: psu1
+    from_port: out2
+    to_component: cam1
+    to_port: power_in
+    connection_type: power
