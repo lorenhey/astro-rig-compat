@@ -1,0 +1,42 @@
+components:
+  adapter_m54_m48:
+    id: adapter_m54_m48
+    type: adapter
+    metadata:
+      model: "M54 to M48 Adapter"
+    mass: "15 g"
+    optical_length: "2 mm"
+    mechanical_ports:
+      in:
+        interface_family: metric_thread
+        nominal_size: "54 mm"
+        pitch: "0.75 mm"
+        gender: female
+        direction: input
+      out:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: male
+        direction: output
+
+  adapter_m48_m42:
+    id: adapter_m48_m42
+    type: adapter
+    metadata:
+      model: "M48 to M42 Adapter"
+    mass: "10 g"
+    optical_length: "0 mm"
+    mechanical_ports:
+      in:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: female
+        direction: input
+      out:
+        interface_family: metric_thread
+        nominal_size: "42 mm"
+        pitch: "0.75 mm"
+        gender: male
+        direction: output

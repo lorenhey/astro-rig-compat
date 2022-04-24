@@ -1,0 +1,84 @@
+components:
+  spacer_1mm:
+    id: spacer_1mm
+    type: spacer
+    metadata:
+      model: "1mm Tuning Ring M48"
+    mass: "2 g"
+    optical_length: "1 mm"
+    mechanical_ports:
+      in:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: female
+        direction: input
+      out:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: male
+        direction: output
+
+  spacer_2mm:
+    id: spacer_2mm
+    type: spacer
+    metadata:
+      model: "2mm Spacer M48"
+    mass: "5 g"
+    optical_length: "2 mm"
+    mechanical_ports:
+      in:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: female
+        direction: input
+      out:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: male
+        direction: output
+        
+  spacer_5mm:
+    id: spacer_5mm
+    type: spacer
+    metadata:
+      model: "5mm Spacer M48"
+    mass: "10 g"
+    optical_length: "5 mm"
+    mechanical_ports:
+      in:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: female
+        direction: input
+      out:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: male
+        direction: output
+
+  spacer_10mm:
+    id: spacer_10mm
+    type: spacer
+    metadata:
+      model: "10mm Spacer M48"
+    mass: "15 g"
+    optical_length: "10 mm"
+    mechanical_ports:
+      in:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: female
+        direction: input
+      out:
+        interface_family: metric_thread
+        nominal_size: "48 mm"
+        pitch: "0.75 mm"
+        gender: male
+        direction: output
