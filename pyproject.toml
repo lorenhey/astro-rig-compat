@@ -1,7 +1,7 @@
 [project]
 name = "astro-rig-compat"
-version = "0.1.0"
-description = "Add your description here"
+version = "2.0.0"
+description = "Astronomical Rig Compatibility, Backfocus Solver, Optical Ray Tracing & Engineering Constraints Workbench"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

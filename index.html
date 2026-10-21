@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AstroRigCompat — Astronomical Rig Compatibility, Backfocus Solver & Ray Tracing</title>
+  <meta name="description" content="Interactive browser-based workbench for astronomical imaging rig verification, mechanical thread matching, optical backfocus tolerance solving, 12V power budgets, and mount payload analysis.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔭</text></svg>">
+  
+  <!-- KaTeX for rigorous optical and mechanical formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-icon">🔭</span>
+      <div>
+        <span class="brand-title">AstroRigCompat</span>
+        <span class="brand-version">v2.0.0</span>
+      </div>
+    </div>
+    
+    <div class="header-controls">
+      <div class="rig-selector-group">
+        <label for="rigSelect" class="selector-label">Astronomical Rig:</label>
+        <select id="rigSelect" class="rig-select"></select>
+      </div>
+      <div class="btn-group">
+        <button id="btnExportJson" class="btn" title="Export complete rig and evaluation report to JSON">💾 Export JSON</button>
+        <button id="btnCopySummary" class="btn" title="Copy compatibility verdict to clipboard">📋 Copy Verdict</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-container">
+    
+    <!-- Compatibility Status Banner -->
+    <section class="compat-banner">
+      <div class="rig-meta">
+        <h1 id="rigTitle" class="rig-title">Loading Rig...</h1>
+        <p id="rigDesc" class="rig-desc">Rig description...</p>
+        <div id="rigInfo" class="rig-info"></div>
+      </div>
+      
+      <div class="compat-verdict-box">
+        <div class="verdict-score-ring">
+          <div id="compatScoreVal" class="score-num">--</div>
+          <div class="score-label">Rig Health</div>
+        </div>
+        <div class="verdict-status">
+          <span id="compatBadge" class="compat-badge">EVALUATING</span>
+          <div class="subscores-compact">
+            <div class="subscore-item">Mech: <span id="statusMech" class="subscore-val">--</span></div>
+            <div class="subscore-item">Opt: <span id="statusOpt" class="subscore-val">--</span></div>
+            <div class="subscore-item">Pow: <span id="statusPow" class="subscore-val">--</span></div>
+            <div class="subscore-item">Mnt: <span id="statusMnt" class="subscore-val">--</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI Metric Cards Grid -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Consumed Backfocus</div>
+        <div class="kpi-value-row">
+          <div id="kpiBf" class="kpi-value">-- mm</div>
+        </div>
+        <div class="kpi-sub">Optical path with filter shift</div>
+      </div>
+      
+      <div class="kpi-card">
+        <div class="kpi-label">Backfocus Delta ($\Delta z$)</div>
+        <div class="kpi-value-row">
+          <div id="kpiBfDelta" class="kpi-value">-- mm</div>
+        </div>
+        <div class="kpi-sub">Tolerance target $\pm 0.5$ mm</div>
+      </div>
+      
+      <div class="kpi-card">
+        <div class="kpi-label">Image Circle</div>
+        <div class="kpi-value-row">
+          <div id="kpiCircle" class="kpi-value">Ø -- mm</div>
+        </div>
+        <div class="kpi-sub">Flattener corrected field</div>
+      </div>
+      
+      <div class="kpi-card">
+        <div class="kpi-label">Sensor Diagonal</div>
+        <div class="kpi-value-row">
+          <div id="kpiDiag" class="kpi-value">Ø -- mm</div>
+        </div>
+        <div class="kpi-sub">Active imaging area</div>
+      </div>
+      
+      <div class="kpi-card">
+        <div class="kpi-label">Mount Payload</div>
+        <div class="kpi-value-row">
+          <div id="kpiPayload" class="kpi-value">-- kg</div>
+        </div>
+        <div id="kpiPayloadRatio" class="kpi-sub">--% cap</div>
+      </div>
+      
+      <div class="kpi-card">
+        <div class="kpi-label">12V DC Current</div>
+        <div class="kpi-value-row">
+          <div id="kpiAmps" class="kpi-value">-- A</div>
+        </div>
+        <div id="kpiAmpsPeak" class="kpi-sub">Peak -- A</div>
+      </div>
+    </section>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-navigation">
+      <button class="nav-tab active" data-tab="train">🔭 Optical Train</button>
+      <button class="nav-tab" data-tab="raycone">📐 Ray Cone & Beam</button>
+      <button class="nav-tab" data-tab="sensor">📷 Sensor & Vignetting</button>
+      <button class="nav-tab" data-tab="budgets">⚖️ Power & Mount</button>
+      <button class="nav-tab" data-tab="issues">🚨 Engineering Diagnostics</button>
+      <button class="nav-tab" data-tab="solver">🧩 Backfocus Solver</button>
+      <button class="nav-tab" data-tab="cli">💻 Terminal CLI</button>
+    </nav>
+
+    <!-- Tab Panes -->
+    
+    <!-- 1. Optical Train Schematic Pane -->
+    <div id="pane-train" class="tab-pane active">
+      <div class="chart-box">
+        <div class="chart-header">
+          <div class="chart-title">🔭 Physical Optical Train & Thread Coupling Schematic</div>
+          <div class="chart-legend">
+            <span>🔵 OTA / Reducer</span>
+            <span>🟣 EFW / OAG</span>
+            <span>⚪ Spacers</span>
+            <span>🔴 Camera</span>
+            <span>🟢 Mated Coupling</span>
+            <span>❌ Thread Collision</span>
+          </div>
+        </div>
+        <canvas id="canvasOpticalTrain" class="chart-canvas" width="1200" height="380"></canvas>
+      </div>
+    </div>
+
+    <!-- 2. Longitudinal Ray Cone Tracing Pane -->
+    <div id="pane-raycone" class="tab-pane">
+      <div class="chart-box">
+        <div class="chart-header">
+          <div class="chart-title">📐 Longitudinal Ray Cone Convergence & Focal Plane Tracing</div>
+          <div class="chart-legend">
+            <span>✨ Marginal Beam Rays</span>
+            <span>🎯 Design Focal Plane</span>
+            <span>📷 Actual Sensor Position</span>
+            <span>🔍 Depth of Focus ($\pm 0.5\text{mm}$)</span>
+          </div>
+        </div>
+        <canvas id="canvasRayCone" class="chart-canvas" width="1200" height="380"></canvas>
+      </div>
+    </div>
+
+    <!-- 3. Sensor Format & Vignetting Plane -->
+    <div id="pane-sensor" class="tab-pane">
+      <div class="chart-box">
+        <div class="chart-header">
+          <div class="chart-title">📷 Sensor Format vs. Unvignetted Image Circle Geometry</div>
+          <div class="chart-legend">
+            <span>🟢 100% Fully Illuminated Circle</span>
+            <span>🟡 Vignetted Corner Boundary</span>
+            <span>🟦 Sensor Active Area ($W \times H$)</span>
+          </div>
+        </div>
+        <canvas id="canvasSensor" class="chart-canvas" width="1200" height="380"></canvas>
+      </div>
+    </div>
+
+    <!-- 4. Power & Mount Capacity Gauges -->
+    <div id="pane-budgets" class="tab-pane">
+      <div class="chart-box">
+        <div class="chart-header">
+          <div class="chart-title">⚖️ Astrophotography Mount Payload & 12V DC Electrical Gauges</div>
+          <div class="chart-legend">
+            <span>🟢 Safe (&lt; 65%)</span>
+            <span>🟡 Caution (65% - 100%)</span>
+            <span>🔴 Overload (&gt; 100%)</span>
+          </div>
+        </div>
+        <canvas id="canvasBudgets" class="chart-canvas" width="1200" height="380"></canvas>
+      </div>
+    </div>
+
+    <!-- 5. Engineering Diagnostics & Issues Pane -->
+    <div id="pane-issues" class="tab-pane">
+      <div class="chart-box">
+        <div class="chart-header">
+          <div class="chart-title">🚨 Subsystem Engineering Constraints & Collision Log</div>
+        </div>
+        <div id="issuesList"></div>
+      </div>
+    </div>
+
+    <!-- 6. Backfocus Combinatorial Solver Pane -->
+    <div id="pane-solver" class="tab-pane">
+      <div class="solver-card">
+        <div class="chart-title" style="margin-bottom: 12px;">🧩 Combinatorial Spacer & Thread Adapter Solver</div>
+        <p class="finding-desc" style="margin-bottom: 16px;">
+          Find optimal combinations of astronomical extension tubes (e.g., standard M48/M42 2mm, 5mm, 10mm, 15mm, 20mm, 30mm rings) to bridge your target backfocus deficit within strict optical tolerances.
+        </p>
+        <div class="solver-row">
+          <div class="form-group">
+            <label class="form-label" for="solverDistInput">Missing Distance (mm):</label>
+            <input type="number" id="solverDistInput" class="form-input" value="16.5" step="0.5" min="0.5">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="solverTolInput">Tolerance Window ($\pm$ mm):</label>
+            <input type="number" id="solverTolInput" class="form-input" value="0.5" step="0.1" min="0.1">
+          </div>
+          <button id="btnRunSolver" class="btn btn-primary">⚡ Compute Spacer Solutions</button>
+        </div>
+        <div id="solverResults"></div>
+      </div>
+    </div>
+
+    <!-- 7. In-Browser CLI Terminal Pane -->
+    <div id="pane-cli" class="tab-pane">
+      <div class="cli-box">
+        <div class="cli-topbar">
+          <div class="cli-circle circle-red"></div>
+          <div class="cli-circle circle-yellow"></div>
+          <div class="cli-circle circle-green"></div>
+          <span class="cli-term-title">AstroRigCompat Interactive Terminal Shell — Type &apos;help&apos; for commands</span>
+        </div>
+        <div id="cliTerminal"></div>
+      </div>
+    </div>
+
+    <!-- Custom Rig JSON Dropzone -->
+    <div id="dropZone" class="drop-zone">
+      <input type="file" id="fileInput" accept=".json" style="display:none">
+      <div class="drop-icon">📥</div>
+      <div class="drop-text">Drop custom astronomical rig JSON here or click to browse</div>
+      <div class="drop-sub">Evaluates mechanical threads, optical distances, power draw, and mount limits instantly in your browser.</div>
+    </div>
+
+    <!-- Rig Compatibility Mathematical Formulations -->
+    <section class="forensics-doc">
+      <h2 class="forensics-title">Mathematical & Physical Engineering Foundations</h2>
+      <p class="finding-desc">
+        AstroRigCompat implements exact optical, physical, and electrical equations used by precision astrophotographers and optical engineers:
+      </p>
+
+      <div class="equation-block">
+        <b>1. Filter Refractive Index Light Path Displacement:</b>
+        $$\Delta z = t \cdot \left(\frac{n - 1}{n}\right) \approx \frac{t}{3} \quad (n \approx 1.5)$$
+        Glass substrate filters (typically $t = 2.0\text{mm}$, refractive index $n \approx 1.5$) push the focal point backward by approximately $+0.67\text{mm}$, requiring the physical spacing to increase accordingly.
+      </div>
+
+      <div class="equation-block">
+        <b>2. Geometric Sensor Diagonal & Vignetting Illumination:</b>
+        $$D_{\text{sensor}} = \sqrt{W^2 + H^2}, \qquad R_{\text{illum}} = \frac{\Phi_{\text{circle}}}{D_{\text{sensor}}}$$
+        When $R_{\text{illum}} < 1.0$, mechanical/optical vignetting is guaranteed at the sensor corners, requiring dark sky flat-field calibration or a smaller sensor crop.
+      </div>
+
+      <div class="equation-block">
+        <b>3. Equatorial Mount Payload Capacity Ratio:</b>
+        $$\eta_{\text{mount}} = \frac{\sum m_{\text{payload}}}{C_{\text{rated}}} \times 100\%$$
+        While visual astronomy allows up to $100\%$ capacity, high-precision astrophotography autoguiding requires $\eta_{\text{mount}} \le 60\% - 65\%$ to avoid periodic error degradation and wind sail oscillation.
+      </div>
+
+      <div class="equation-block">
+        <b>4. DC Power Budget & Voltage Drop:</b>
+        $$I_{\text{total, continuous}} = \sum_{k} I_{k, \text{cont}}, \qquad I_{\text{total, peak}} = \sum_{k} I_{k, \text{peak}} \le I_{\text{supply}}$$
+        DC 12V center-positive distribution lines must not exceed power supply continuous rating to prevent camera TEC cooler brownouts or mount stepper stalls.
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    AstroRigCompat v2.0.0 &bull; Interactive Astronomical Rig Compatibility & Optical Workbench &bull; Open Source under MIT License &bull; <a href="https://github.com/lorenhey/astro-rig-compat" target="_blank" rel="noopener">GitHub Repository</a>
+  </footer>
+
+  <!-- Application Engine & UI Scripts -->
+  <script src="js/arc-engine.js"></script>
+  <script src="js/arc-catalog.js"></script>
+  <script src="js/arc-plotter.js"></script>
+  <script src="js/arc-cli.js"></script>
+  <script src="js/arc-app.js"></script>
+</body>
+</html>
